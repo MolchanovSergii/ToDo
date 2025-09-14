@@ -1,0 +1,24 @@
+{
+  "todos": [
+    {
+      "id": "1",
+      "title": "Пройти React заново",
+      "description": "Вивчити розділ про хуки useState та useEffect",
+      "checked": false,
+      "creationDate": "дата створення"
+    },
+    {
+      "id": "2",
+      "title": "Купити продукти",
+      "description": "Хліб, молоко, сир",
+      "checked": false,
+      "creationDate": "дата створення"
+    },
+    {
+      "id": "46e0",
+      "title": "sadasd",
+      "description": "adasdasda",
+      "checked": false
+    }
+  ]
+}
