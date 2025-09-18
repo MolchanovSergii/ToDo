@@ -1,22 +1,33 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home/Home.jsx";
-import ToDoListPage from "./pages/ToDoListPage/ToDoListPage.jsx";
-import About from "./pages/About/About.jsx";
-import NotFoundPage from "./pages/NotFoundPage/NotFoundPage.jsx";
-import Navigation from "./components/Navigation/Navigation.jsx";
-import ToDoEditPage from "./pages/ToDoEditPage/ToDoEditPage.jsx";
+import { lazy, Suspense } from "react";
+import Loader from "./components/Loader/Loader.js";
+
+const Home = lazy(() => import("./pages/Home/Home.jsx"));
+const ToDoListPage = lazy(() =>
+  import("./pages/ToDoListPage/ToDoListPage.jsx")
+);
+const About = lazy(() => import("./pages/About/About.jsx"));
+const NotFoundPage = lazy(() =>
+  import("./pages/NotFoundPage/NotFoundPage.jsx")
+);
+const Navigation = lazy(() => import("./components/Navigation/Navigation.jsx"));
+const ToDoEditPage = lazy(() =>
+  import("./pages/ToDoEditPage/ToDoEditPage.jsx")
+);
 
 function App() {
   return (
-    <BrowserRouter>
-      <Navigation />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/todo-list" element={<ToDoListPage />} />
-        <Route path="todo-list/:id" element={<ToDoEditPage />} />
-        <Route path="/about" element={<About />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+    <BrowserRouter basename="/ToDo">
+      <Suspense fallback={<Loader />}>
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/todo-list" element={<ToDoListPage />} />
+          <Route path="todo-list/:id" element={<ToDoEditPage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }
