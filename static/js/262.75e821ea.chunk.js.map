@@ -1,0 +1,1 @@
+{"version":3,"file":"static/js/262.75e821ea.chunk.js","mappings":"yIAAe,SAASA,IACtB,OAAOC,EAAAA,EAAAA,KAAA,MAAAC,SAAI,6HACb,C","sources":["pages/NotFoundPage/NotFoundPage.jsx"],"sourcesContent":["export default function NotFoundPage() {\r\n  return <h2>404 — Сторінку не знайдено</h2>;\r\n}\r\n"],"names":["NotFoundPage","_jsx","children"],"sourceRoot":""}
