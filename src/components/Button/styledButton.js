@@ -28,3 +28,13 @@ export const BaseButton = styled.button`
 `;
 
 export const Button = BaseButton;
+
+export const LogoutButton = styled(BaseButton)`
+  margin-left: auto;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  &:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+`;

@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import Loader from "./components/Loader/Loader.js";
+import PrivateRoute from "./components/PrivateRoute/PrivateRoute.jsx";
 
 const Home = lazy(() => import("./pages/Home/Home.jsx"));
 const ToDoListPage = lazy(() =>
@@ -14,17 +15,54 @@ const Navigation = lazy(() => import("./components/Navigation/Navigation.jsx"));
 const ToDoEditPage = lazy(() =>
   import("./pages/ToDoEditPage/ToDoEditPage.jsx")
 );
+const ErrorPage = lazy(() => import("./pages/ErrorPage/ErrorPage.jsx"));
+const LoginPage = lazy(() => import("./pages/LoginPage/LoginPage.jsx"));
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => localStorage.getItem("isAuthenticated") === "true"
+  );
+
+  const handleLogIn = () => {
+    setIsAuthenticated(true);
+    localStorage.setItem("isAuthenticated", "true");
+  };
+
   return (
     <BrowserRouter basename="/ToDo">
       <Suspense fallback={<Loader />}>
-        <Navigation />
+        <Navigation
+          isAuthenticated={isAuthenticated}
+          setIsAuthenticated={setIsAuthenticated}
+        />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/todo-list" element={<ToDoListPage />} />
-          <Route path="todo-list/:id" element={<ToDoEditPage />} />
-          <Route path="/about" element={<About />} />
+          <Route
+            path="/todo-list"
+            element={
+              <PrivateRoute isAuthenticated={isAuthenticated}>
+                <ToDoListPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="todo-list/:id"
+            element={
+              <PrivateRoute isAuthenticated={isAuthenticated}>
+                <ToDoEditPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <PrivateRoute isAuthenticated={isAuthenticated}>
+                <About />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/error-page" element={<ErrorPage />} />
+          <Route path="login" element={<LoginPage login={handleLogIn} />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

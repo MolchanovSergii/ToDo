@@ -13,12 +13,20 @@
       "description": "Хліб, молоко, сир",
       "checked": false,
       "creationDate": "дата створення"
+    }
+  ],
+  "auth": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "1234",
+      "isAuthenticated": false
     },
     {
-      "id": "46e0",
-      "title": "sadasd",
-      "description": "adasdasda",
-      "checked": false
+      "id": "2",
+      "username": "admin",
+      "password": "1234",
+      "isAuthenticated": false
     }
   ]
 }

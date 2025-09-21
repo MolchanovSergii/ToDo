@@ -1,10 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import {
-  getTodos,
-  addTodo,
-  updateTodo,
-  deleteTodo,
-} from "../../api/api.js";
+import { getTodos, addTodo, updateTodo, deleteTodo } from "../../api/api.js";
 
 import ToDoFilterAndSearch from "./ToDoFilterAndSearch.js";
 import { Container } from "../styledContainer.js";
@@ -12,6 +7,7 @@ import { Button } from "../Button/styledButton.js";
 import ToDoList from "./ToDoList.js";
 import Loader from "../Loader/Loader.js";
 import ErrorMessage from "../ErrorMessage/ErrorMessage.js";
+import { useNavigate } from "react-router-dom";
 
 export const MIN_LENGTH = 3;
 export const MAX_LENGTH = 50;
@@ -28,6 +24,7 @@ const ToDo = () => {
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(true);
 
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -41,14 +38,18 @@ const ToDo = () => {
           setShowAdd(false);
         }
       } catch (err) {
-        setError("Помилка при отриманні Todo");
+        if (err?.response?.status === 404) {
+          navigate("/not-found");
+        } else {
+          navigate("/error-page");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchTodos();
-  }, []);
+  }, [navigate]);
 
   const onClickHandler = async () => {
     const input = inputTitle.trim();
@@ -121,7 +122,6 @@ const ToDo = () => {
       setLoading(false);
     }
   };
-
 
   const filteredToDos = useMemo(() => {
     const searchWords = search.toLowerCase().trim();

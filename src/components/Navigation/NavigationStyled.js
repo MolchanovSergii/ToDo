@@ -3,7 +3,9 @@ import styled from "styled-components";
 
 export const NavigationMenu = styled.nav`
   display: flex;
-  gap: 40px;
+  align-items: center;
+
+  gap: 20px;
   padding: 10px 20px;
   background-color: #f8f9fa;
   border-bottom: 2px solid #ddd;

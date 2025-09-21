@@ -26,10 +26,12 @@ export default function ToDoEditPage() {
           setTodo(res.data);
           setLoading(false);
         }
-      } catch (error) {
-        if (!ignore) {
+      } catch (err) {
+        if (err?.response?.status === 404) {
+          navigate("/not-found");
+        } else {
+          navigate("/error-page");
         }
-        setError("Помилка при завантаженні Todo");
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -37,7 +39,7 @@ export default function ToDoEditPage() {
     };
 
     fetchTodo();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleSave = async (updatedTodo) => {
     setLoading(true);
