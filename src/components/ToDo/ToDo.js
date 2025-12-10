@@ -1,139 +1,88 @@
 import { useMemo, useState, useEffect } from "react";
-import { getTodos, addTodo, updateTodo, deleteTodo } from "../../api/api.js";
-
-import ToDoFilterAndSearch from "./ToDoFilterAndSearch.js";
 import { Container } from "../styledContainer.js";
 import { Button } from "../Button/styledButton.js";
 import ToDoList from "./ToDoList.js";
+import ToDoFilterAndSearch from "./ToDoFilterAndSearch.js";
 import Loader from "../Loader/Loader.js";
 import ErrorMessage from "../ErrorMessage/ErrorMessage.js";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchToDos,
+  addTodoAsync,
+  deleteTodoAsync,
+  toggleTodoAsync,
+} from "../../redux/slices/todoSlice.js";
 
 export const MIN_LENGTH = 3;
 export const MAX_LENGTH = 50;
 
 const ToDo = () => {
-  const [todos, setTodos] = useState([]);
   const [inputTitle, setInputTitle] = useState("");
   const [inputDescription, setInputDescription] = useState("");
-
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [error, setError] = useState("");
-
-  const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(true);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const todos = useSelector((state) => state.todos.items);
+  const loading = useSelector((state) => state.todos.loading);
+  const error = useSelector((state) => state.todos.error);
 
   useEffect(() => {
-    setLoading(true);
-    setError("");
+    dispatch(fetchToDos())
+      .unwrap()
+      .then((data) => {
+        if (!data || data.length === 0) setShowAdd(false);
+      })
+      .catch((err) => {
+        if (err.status === 404) navigate("/not-found");
+        else navigate("/error-page");
+      });
+  }, [dispatch, navigate]);
 
-    const fetchTodos = async () => {
-      try {
-        const res = await getTodos();
-        setTodos(res.data ?? []);
-        if (res.data.length === 0) {
-          setShowAdd(false);
-        }
-      } catch (err) {
-        if (err?.response?.status === 404) {
-          navigate("/not-found");
-        } else {
-          navigate("/error-page");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+  const onClickHandler = () => {
+    const title = inputTitle.trim();
 
-    fetchTodos();
-  }, [navigate]);
+    if (title.length < MIN_LENGTH || title.length > MAX_LENGTH) return;
 
-  const onClickHandler = async () => {
-    const input = inputTitle.trim();
+    dispatch(
+      addTodoAsync({ title, description: inputDescription, checked: false })
+    );
 
-    if (input === "" || input.length < MIN_LENGTH) {
-      setError(`Заголовок має бути не менше ${MIN_LENGTH} символів`);
-
-      return;
-    }
-    if (input.length > MAX_LENGTH) {
-      setError(`Заголовок має бути не більше ${MAX_LENGTH} символів`);
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const newTodo = {
-        title: inputTitle,
-        description: inputDescription,
-        checked: false,
-      };
-
-      const res = await addTodo(newTodo);
-      setTodos((prev) => [...prev, res.data]);
-      setInputTitle("");
-      setInputDescription("");
-    } catch (error) {
-      setError("Помилка при додаванні Todo 😢");
-    } finally {
-      setLoading(false);
-    }
+    setInputTitle("");
+    setInputDescription("");
+    setShowAdd(true);
   };
 
   const handelKeyDown = (e) => {
     if (e.key === "Enter") onClickHandler();
   };
 
-  const onDeleteToDo = async (id) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      await deleteTodo(id);
-      setTodos((prev) => prev.filter((todo) => todo.id !== id));
-    } catch (error) {
-      setError("Помилка при видаленні Todo");
-    } finally {
-      setLoading(false);
-    }
+  const onDeleteToDo = (id) => {
+    dispatch(deleteTodoAsync(id));
   };
 
-  const onToggleCompleted = async (id) => {
-    const todo = todos.find((todo) => todo.id === id);
-
+  const onToggleCompleted = (id) => {
+    const todo = todos.find((t) => t.id === id);
     if (!todo) return;
 
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await updateTodo(id, { ...todo, checked: !todo.checked });
-      setTodos((prev) =>
-        prev.map((todo) => (todo.id === id ? res.data : todo))
-      );
-    } catch (error) {
-      setError("Помилка при оновленні статусу Todo");
-    } finally {
-      setLoading(false);
-    }
+    dispatch(toggleTodoAsync({ id, checked: !todo.checked }));
   };
 
   const filteredToDos = useMemo(() => {
     const searchWords = search.toLowerCase().trim();
 
-    const filterByStatus = todos.filter((todo) => {
+    const filteredByStatus = todos.filter((todo) => {
       if (filter === "active") return !todo.checked;
       if (filter === "completed") return todo.checked;
       return true;
     });
-    if (!searchWords) return filterByStatus;
 
-    return filterByStatus.filter((todo) =>
+    if (!searchWords) return filteredByStatus;
+
+    return filteredByStatus.filter((todo) =>
       `${todo.title} ${todo.description}`.toLowerCase().includes(searchWords)
     );
   }, [todos, search, filter]);
@@ -142,39 +91,33 @@ const ToDo = () => {
     <Container>
       {loading && <Loader />}
       {error && <ErrorMessage message={error} />}
-      {!loading && !error && todos.length === 0 && (
-        <div>
-          <Button type="button" onClick={() => setShowAdd(true)}>
-            Додати Todo
-          </Button>
-        </div>
+
+      {!loading && todos.length === 0 && (
+        <Button type="button" onClick={() => setShowAdd(true)}>
+          Додати Todo
+        </Button>
       )}
 
       {showAdd && (
         <div>
-          <label className="label" htmlFor="new-todo">
-            New task -{" "}
-          </label>
+          <label htmlFor="new-todo">New task - </label>
           <input
-            className="input"
             id="new-todo"
-            placeholder="Введіть нова завдання"
+            placeholder="Введіть нову задачу"
             value={inputTitle}
             onChange={(e) => setInputTitle(e.target.value)}
             onKeyDown={handelKeyDown}
           />
 
-          <label className="label" htmlFor="new-todo-description">
-            Task description-{" "}
-          </label>
+          <label htmlFor="new-todo-description">Task description - </label>
           <input
-            className="input"
             id="new-todo-description"
-            placeholder="Зробить опис завдання"
+            placeholder="Опис задачі"
             value={inputDescription}
             onChange={(e) => setInputDescription(e.target.value)}
             onKeyDown={handelKeyDown}
           />
+
           <div className="container">
             <p>Total ToDo's: {todos.length}</p>
             <Button type="button" onClick={onClickHandler}>
@@ -190,6 +133,7 @@ const ToDo = () => {
         search={search}
         setSearch={setSearch}
       />
+
       {filteredToDos.length === 0 && <p>Уп-с ... а я нічого не знайшов</p>}
 
       <ToDoList

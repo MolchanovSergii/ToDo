@@ -6,12 +6,16 @@ import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
 import { loginUser } from "../../api/api";
 import { FormWrapper } from "../../components/styledFormWrapper";
 
-export default function LoginPage({ login }) {
+import { login } from "../../redux/slices/authSlice";
+import { useDispatch } from "react-redux";
+
+export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,7 +30,7 @@ export default function LoginPage({ login }) {
       const user = await loginUser({ username, password });
 
       if (user) {
-        login();
+        dispatch(login({ username, password }));
         navigate("/todo-list");
       } else {
         setError("Невірний логін або пароль");

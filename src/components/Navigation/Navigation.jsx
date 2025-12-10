@@ -1,13 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { LogoutButton } from "../Button/styledButton";
 import { NavigationMenu, NavigationLink } from "./NavigationStyled";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../redux/slices/authSlice";
 
-export default function Navigation({ isAuthenticated, setIsAuthenticated }) {
+export default function Navigation() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector(
+    (state) => state.auth.currentUser !== null
+  );
 
   const handleLogOut = () => {
-    setIsAuthenticated(false);
-    localStorage.setItem("isAuthenticated", "false");
+    dispatch(logout());
     navigate("/");
   };
 
@@ -15,11 +20,11 @@ export default function Navigation({ isAuthenticated, setIsAuthenticated }) {
     <NavigationMenu>
       <NavigationLink to="/">Home</NavigationLink>
       {isAuthenticated && (
-        <NavigationLink to="/todo-list">Todo List</NavigationLink>
-      )}
-      {isAuthenticated && <NavigationLink to="/about">About</NavigationLink>}
-      {isAuthenticated && (
-        <LogoutButton onClick={handleLogOut}>Logout</LogoutButton>
+        <>
+          <NavigationLink to="/todo-list">Todo List</NavigationLink>
+          <NavigationLink to="/about">About</NavigationLink>
+          <LogoutButton onClick={handleLogOut}>Logout</LogoutButton>
+        </>
       )}
     </NavigationMenu>
   );
